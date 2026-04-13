@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Assignment Generator</title>
+
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #111;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 5px;
+        }
+
+
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+
+        #chatbox {
+            width: 85%;
+            margin: 20px auto;
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            min-height: 200px;
+        }
+    </style>
+</head>
+
+
+<body>
+
+
+<h1>📚 AI Computer Assignment Generator</h1>
+
+
+<p>Designed for teachers to generate assignments + video lessons</p>
+
+
+<input id="topic" placeholder="Topic (e.g. HTML, Python loops)" /><br>
+<input id="level" placeholder="Level (Beginner, Intermediate, Advanced)" /><br>
+<input id="type" placeholder="Type (Project, Worksheet, Quiz)" /><br>
+
+
+<button onclick="generateAssignment()">Generate Assignment</button>
+
+
+<div id="chatbox">Your assignment will appear here...</div>
+
+
+<script>
+async function generateAssignment() {
+
+
+    let topic = document.getElementById("topic").value;
+    let level = document.getElementById("level").value;
+    let type = document.getElementById("type").value;
+
+
+    let chatbox = document.getElementById("chatbox");
+
+
+    let API_KEY = "YOUR_API_KEY_HERE";
+
+
+    // YouTube embedded search
+    let youtubeSearch = encodeURIComponent(topic + " " + type + " tutorial");
+
+
+    let youtubeEmbed = `https://www.youtube.com/embed?listType=search&list=${youtubeSearch}`;
+
+
+    let prompt = `
+Create a ${level} level ${type} for a computer science class about "${topic}".
+
+
+Format it clearly:
+
+
+Title:
+Objective:
+Instructions:
+Requirements:
+Grading Rubric:
+Extension Challenge:
+
+
+Make each version unique so many different assignments can be generated.
+`;
+
+
+    try {
+        let response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + API_KEY
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are a professional computer science teacher assistant that creates structured, classroom-ready assignments with variety and clarity."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ]
+            })
+        });
+
+
+        let data = await response.json();
+        let reply = data.choices[0].message.content;
+
+
+        chatbox.innerHTML = `
+            <h2>📝 Generated Assignment</h2>
+            <div style="white-space: pre-wrap;">${reply}</div>
+
+
+            <hr>
+
+
+            <h2>🎥 Tutorial Video</h2>
+            <iframe width="100%" height="315"
+                src="${youtubeEmbed}"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        `;
+
+
+    } catch (error) {
+        chatbox.innerHTML = "❌ Error generating assignment. Check API key or internet connection.";
+        console.error(error);
+    }
+}
+</script>
+
+
+</body>
+</html>
